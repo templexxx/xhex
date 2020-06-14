@@ -29,14 +29,14 @@ type encDecTest struct {
 }
 
 var encDecTests = []encDecTest{
-	{"", []byte{}},
-	{"0001020304050607", []byte{0, 1, 2, 3, 4, 5, 6, 7}},
+	{"", []byte{}}, // empty
+	{"0001020304050607", []byte{0, 1, 2, 3, 4, 5, 6, 7}}, // unaligned
 	{"000102030405060708090a0b0c0d0e0f",
 		[]byte{0, 1, 2, 3, 4, 5, 6, 7,
-			8, 9, 10, 11, 12, 13, 14, 15}},
+			8, 9, 10, 11, 12, 13, 14, 15}}, // aligned
 	{"000102030405060708090a0b0c0d0e0f010e",
 		[]byte{0, 1, 2, 3, 4, 5, 6, 7,
-			8, 9, 10, 11, 12, 13, 14, 15, 1, 14}},
+			8, 9, 10, 11, 12, 13, 14, 15, 1, 14}}, // aligned + unaligned
 	{"08090a0b0c0d0e0f", []byte{8, 9, 10, 11, 12, 13, 14, 15}},
 	{"f0f1f2f3f4f5f6f7", []byte{0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7}},
 	{"f8f9fafbfcfdfeff", []byte{0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe, 0xff}},
@@ -141,7 +141,7 @@ func TestDecodeErr(t *testing.T) {
 var sink []byte
 
 func BenchmarkEncode(b *testing.B) {
-	for _, size := range []int{16, 24, 1024} { // 16 for reqid, 24 for oid, 1024 for showing performance.
+	for _, size := range []int{16, 24, 1024} { // 16 for aligned, 24 for aligned+unaligned, 1024 for showing performance.
 		src := bytes.Repeat([]byte{2, 3, 5, 7, 9, 11, 13, 17}, size/8)
 		sink = make([]byte, 2*size)
 
@@ -155,7 +155,7 @@ func BenchmarkEncode(b *testing.B) {
 }
 
 func BenchmarkDecode(b *testing.B) {
-	for _, size := range []int{32, 48, 2048} { // 32 for reqid, 48 for oid
+	for _, size := range []int{32, 48, 2048} {
 		src := bytes.Repeat([]byte{'2', 'b', '7', '4', '4', 'f', 'a', 'a'}, size/8)
 		sink = make([]byte, size/2)
 
