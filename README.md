@@ -5,7 +5,35 @@
 [![Unit Test](https://github.com/templexxx/xhex/actions/workflows/unit-test.yml/badge.svg)](https://github.com/templexxx/xhex/actions/workflows/unit-test.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/templexxx/xhex)](https://goreportcard.com/report/github.com/templexxx/xhex)
 
-Hexadecimal encoding, 20x faster than stdlib.
+`xhex` provides high-performance hexadecimal encoding/decoding for Go.
+On AVX2-capable x86_64 CPUs, it uses a SIMD fast path and falls back to a portable implementation otherwise.
+
+## Highlights
+
+- API-compatible behavior with Go's `encoding/hex` for byte-slice encode/decode use cases.
+- Runtime CPU feature detection; AVX2 acceleration is enabled automatically when available.
+- Significant throughput gains in large-buffer workloads.
+
+## Usage
+
+```go
+package main
+
+import "github.com/templexxx/xhex"
+
+func main() {
+	src := []byte("xhex")
+	enc := make([]byte, len(src)*2)
+	xhex.Encode(enc, src)
+
+	dec := make([]byte, len(enc)/2)
+	_ = xhex.Decode(dec, enc)
+}
+```
+
+## Benchmark (vs `encoding/hex`)
+
+Typical results:
 
 ```
 Compare with standard lib:
@@ -29,3 +57,6 @@ BenchmarkDecode/32-8       534.90       3074.74      5.75x
 BenchmarkDecode/48-8       548.75       1359.05      2.48x
 BenchmarkDecode/2048-8     563.56       11227.56     19.92x
 ```
+
+Measured with project benchmarks under default settings.
+Actual speedup depends on CPU model, Go version, and input size distribution.

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package xhex implements hexadecimal encoding and decoding.
-// xhex use AVX2 (if has) to accelerate encoding&decoding.
+// Package xhex implements high-performance hexadecimal encoding and decoding.
+// On AVX2-capable x86_64 CPUs, xhex enables SIMD acceleration at runtime.
 package xhex
 
 import (
@@ -25,15 +25,15 @@ const hextable = "0123456789abcdef"
 
 // Encode encodes src into (2 * len(src)) bytes of dst.
 //
-// Warn:
-// dst should have enough space(2 * len(src)),
-// and len(src) must not be 0.
+// Caller requirements:
+//   - dst must have length >= 2*len(src)
+//   - src may be empty
 func Encode(dst, src []byte) {
 	encode(dst, src)
 }
 
-// Define encode as a variable for reducing branch (test has AVX2 or not),
-// see xhex_amd64.go for details.
+// encode is assigned at init time to avoid checking AVX2 support on each call.
+// See xhex_amd64.go for architecture-specific setup.
 var encode = func(dst, src []byte) {
 	encodeBase(dst, src)
 }
@@ -72,6 +72,7 @@ var decode = func(dst, src []byte) error {
 	return decodeBase(dst, src)
 }
 
+// decodeBase validates input and decodes byte by byte.
 func decodeBase(dst, src []byte) error {
 	i, j := 0, 1
 	for ; j < len(src); j += 2 {

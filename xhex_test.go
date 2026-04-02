@@ -30,7 +30,7 @@ type encDecTest struct {
 
 var encDecTests = []encDecTest{
 	{"", []byte{}}, // empty
-	{"0001020304050607", []byte{0, 1, 2, 3, 4, 5, 6, 7}}, // unaligned
+	{"0001020304050607", []byte{0, 1, 2, 3, 4, 5, 6, 7}}, // one SIMD block tail case
 	{"000102030405060708090a0b0c0d0e0f",
 		[]byte{0, 1, 2, 3, 4, 5, 6, 7,
 			8, 9, 10, 11, 12, 13, 14, 15}}, // aligned
@@ -54,7 +54,7 @@ func TestEncode(t *testing.T) {
 		}
 	}
 
-	// Compare with Go standard library.
+	// Validate against Go's standard library implementation.
 	rand.Seed(time.Now().UnixNano())
 	for i := 1; i < 1024; i++ {
 		src := make([]byte, i)
@@ -67,14 +67,13 @@ func TestEncode(t *testing.T) {
 		hex.Encode(exp, src)
 
 		if !bytes.Equal(exp, act) {
-			t.Fatal("encode misamtch")
+			t.Fatal("encode mismatch")
 		}
 	}
 }
 
 func TestDecode(t *testing.T) {
-	// Case for decoding uppercase hex characters, since
-	// Encode always uses lowercase.
+	// Decode accepts uppercase input even though Encode emits lowercase.
 	decTests := append(encDecTests, encDecTest{"F8F9FAFBFCFDFEFF", []byte{0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe, 0xff}})
 	for i, test := range decTests {
 		dst := make([]byte, len(test.enc)/2)
@@ -88,7 +87,7 @@ func TestDecode(t *testing.T) {
 		}
 	}
 
-	// Compare with Go standard library.
+	// Validate against Go's standard library implementation.
 	rand.Seed(time.Now().UnixNano())
 	for i := 1; i < 1024; i++ {
 		p := make([]byte, i*2)
@@ -107,7 +106,7 @@ func TestDecode(t *testing.T) {
 		}
 
 		if !bytes.Equal(exp, act) {
-			t.Fatal("decode misamtch")
+			t.Fatal("decode mismatch")
 		}
 	}
 }
@@ -141,7 +140,7 @@ func TestDecodeErr(t *testing.T) {
 var sink []byte
 
 func BenchmarkEncode(b *testing.B) {
-	for _, size := range []int{16, 24, 1024} { // 16 for aligned, 24 for aligned+unaligned, 1024 for showing performance.
+	for _, size := range []int{16, 24, 1024} { // 16 aligned, 24 mixed tail, 1024 throughput-focused.
 		src := bytes.Repeat([]byte{2, 3, 5, 7, 9, 11, 13, 17}, size/8)
 		sink = make([]byte, 2*size)
 
