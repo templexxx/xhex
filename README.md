@@ -1,4 +1,10 @@
 # xhex
+
+[![pkg.go.dev](https://pkg.go.dev/badge/github.com/templexxx/xhex.svg)](https://pkg.go.dev/github.com/templexxx/xhex)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Unit Test](https://github.com/templexxx/xhex/actions/workflows/unit-test.yml/badge.svg)](https://github.com/templexxx/xhex/actions/workflows/unit-test.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/templexxx/xhex)](https://goreportcard.com/report/github.com/templexxx/xhex)
+
 Hexadecimal encoding, 20x faster than stdlib.
 
 ```
